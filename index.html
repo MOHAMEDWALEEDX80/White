@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 بطوط التعليمية - منصة طلاب الحاسبات</title>
+    <link rel="stylesheet" href="modern-white-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- احذف أي مكتبات Firebase قديمة وأضف هذه: -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+    <!-- شاشة تسجيل الدخول (Firebase Auth) -->
+    <div id="authModal" class="modal auth-modal" style="display:none;">
+        <div class="modal-content auth-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-shield"></i> تسجيل الدخول</h2>
+            </div>
+            <div class="modal-body">
+                <p id="authStatusText" class="settings-note" style="margin-bottom: 16px;">
+                    سجّل دخولك لمتابعة المنصة.
+                </p>
+
+                <button class="settings-save-btn google-signin-btn" id="googleSignInBtn" style="width:100%; justify-content:center;">
+                    <i class="fab fa-google"></i> المتابعة بحساب Google
+                </button>
+
+                <div class="auth-divider"><span>أو</span></div>
+
+                <div class="auth-form">
+                    <input id="authEmail" type="email" placeholder="البريد الإلكتروني" autocomplete="email" />
+                    <input id="authPassword" type="password" placeholder="كلمة المرور" autocomplete="current-password" />
+
+                    <div class="auth-actions">
+                        <button class="settings-action" id="emailSignUpBtn">
+                            <i class="fas fa-user-plus"></i> إنشاء حساب
+                        </button>
+                        <button class="settings-action secondary" id="emailSignInBtn">
+                            <i class="fas fa-right-to-bracket"></i> تسجيل دخول
+                        </button>
+                    </div>
+
+                    <button class="settings-action secondary" id="resendVerificationBtn" style="display:none; width:100%; justify-content:center; margin-top: 10px;">
+                        <i class="fas fa-envelope"></i> إعادة إرسال رسالة التفعيل
+                    </button>
+
+                    <button class="settings-action secondary" id="checkVerificationBtn" style="display:none; width:100%; justify-content:center; margin-top: 10px;">
+                        <i class="fas fa-circle-check"></i> تحقّق من التفعيل
+                    </button>
+                </div>
+
+                <p class="settings-note" style="margin-top: 14px; opacity: 0.9;">
+                    ملاحظة: كلمة المرور لا يتم حفظها داخل الموقع، وهي محفوظة بشكل مُشفّر داخل Firebase فقط.
+                </p>
+            </div>
+        </div>
+    </div>
+
+<!-- الهيكل الرئيسي للمنصة -->
+    <div id="mainPlatform" class="main-platform" style="display:none">
+        <!-- شريط التنقل الفضائي -->
+        <nav class="space-navbar">
+            <div class="nav-container">
+                                <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="القائمة" aria-expanded="false" aria-controls="navControls">
+                    <i class="fas fa-bars"></i>
+                </button>
+<div class="nav-logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h2>بطوط التعليمية</h2>
+                        <p>المنصة الفضائية</p>
+                    </div>
+                </div>
+<div class="nav-controls" id="navControls">
+                    <button class="nav-btn active" onclick="showSection('home')">
+                        <i class="fas fa-home"></i> الرئيسية
+                    </button>
+                    <button class="nav-btn" onclick="window.location.href='gpa/index.html'">
+                        <i class="fas fa-graduation-cap"></i> GPA
+                    </button>
+                    <button class="nav-btn" onclick="showSection('exams')">
+                        <i class="fas fa-graduation-cap"></i> الامتحانات
+                    </button>
+                    <button class="nav-btn" id="musicNavBtn" type="button" title="ضغطه قصيرة: تشغيل/إيقاف - ضغطه طويلة: تحكم في الأغاني">
+                        <i class="fas fa-music"></i> start music
+                    </button>
+<button class="nav-btn" id="settingsNavBtn" onclick="showSection('settings')" style="display:none">
+                        <i class="fas fa-cog"></i> الإعدادات
+                    </button>
+                    <button class="nav-btn" id="logoutNavBtn" onclick="logoutUser()" style="display:none">
+                        <i class="fas fa-right-from-bracket"></i> خروج
+                    </button>
+
+</div>
+            </div>
+        </nav>
+
+        <!-- المحتوى الرئيسي -->
+        <main class="space-main">
+            <!-- القسم 1: الرئيسية -->
+            <section id="homeSection" class="platform-section active">
+                <div class="hero-space">
+                    <div class="hero-content">
+                        <h1 class="animate__animated animate__fadeInDown">
+                            <i class="fas fa-rocket"></i> مرحباً بك في رحلتك التعليمية!
+                        </h1>
+                        <p class="hero-description">
+                            استعد لامتحاناتك بمنصة تعليمية متكاملة تجمع بين التحدي والتعلم والترفيه
+                        </p>
+                        
+                        <div class="hero-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="totalQuestions">1500+</h3>
+                                    <p>سؤال في بنك الأسئلة</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="totalUsers">1000+</h3>
+                                    <p>طالب مستخدم للمنصة</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="successRate">94%</h3>
+                                    <p>معدل النجاح</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="challengeCount">500+</h3>
+                                    <p>تحدي مكتمل</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="hero-actions">
+                            <button class="action-btn primary-btn" onclick="showSection('exams'); showExamType('challenge')">
+                                <i class="fas fa-bolt"></i> ابدأ التحدي ⚡
+                            </button>
+                            <button class="action-btn secondary-btn" onclick="showSection('exams')">
+                                <i class="fas fa-graduation-cap"></i> ابدأ اختباراً
+                            </button>
+                            <button class="action-btn settings-btn" id="heroSettingsBtn" onclick="showSection('settings')" style="display:none">
+                                <i class="fas fa-cog"></i> الإعدادات
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-image">
+                        <div class="floating-astronaut">
+                            <i class="fas fa-user-astronaut"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- الميزات الرئيسية -->
+                <div class="features-grid">
+                    <h2 class="section-title">
+                        <i class="fas fa-star"></i> مميزات المنصة الفضائية
+                    </h2>
+                    
+                    <div class="features-container">
+                        <div class="feature-card">
+                            <div class="feature-icon planet-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h3>امتحانات ذكية</h3>
+                            <p>نظام امتحانات يتكيف مع مستواك ويقدم أسئلة متنوعة من بنك ضخم</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon star-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <h3>وضع التحدي ⚡</h3>
+                            <p>تحدي 15 سؤال في <span class="challengeDurationLabel">5</span> دقائق - تنافس مع الزملاء على المركز الأول</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon rocket-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <h3>إدارة الأسئلة</h3>
+                            <p>غيّر أسئلة وضع التحدي بسهولة من خلال صفحة الإعدادات</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon satellite-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h3>تقارير مفصلة</h3>
+                            <p>احصل على تقارير أداء مفصلة توضح نقاط القوة والضعف</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- المواد الدراسية -->
+                <div class="subjects-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-book-open"></i> المواد الدراسية المتاحة
+                    </h2>
+                    
+                    <div class="subjects-grid">
+                      <div class="subject-card" data-subject="physics">
+                        <div class="subject-header">
+                            <div class="subject-icon">
+                                <i class="fas fa-atom"></i>
+                            </div>
+                       <div class="subject-title">
+                                <h3>الفيزياء</h3>
+                                <p>Physics</p>
+                            </div>
+                        </div>
+                        <div class="subject-description">
+                            <p>دراسة المادة والطاقة والتفاعلات بينهما. تشمل الميكانيكا، الكهرباء، والمغناطيسية.</p>
+                        </div>
+                        <div class="subject-actions">
+                            <button class="subject-action-btn lectures-btn" onclick="openLectures('physics')">
+                                <i class="fas fa-book"></i> المحاضرات
+                            </button>
+                          <a href="summary.html" class="subject-action-btn exam-btn">
+                          <i class="fas fa-graduation-cap"></i> الملخصات
+                          </a>
+                        </div>
+                        <div class="subject-stats">
+                            <span><i class="fas fa-question-circle"></i>150+ سؤال</span>
+                            <span><i class="fas fa-star"></i>متوسط</span>
+                           <span><i class="fas fa-clock"></i>استعد</span>
+                        </div>
+                    </div>
+                        
+                    <!-- الإلكترونيات -->
+                    <div class="subject-card" data-subject="electronics">
+                        <div class="subject-header">
+                            <div class="subject-icon">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <div class="subject-title">
+                                <h3>الإلكترونيات</h3>
+                                <p>Electronics</p>
+                            </div>
+                        </div>
+                        <div class="subject-description">
+                            <p>دراسة الدوائر الإلكترونية، أشباه الموصلات، والأنظمة الرقمية والتناظرية.</p>
+                        </div>
+                        <div class="subject-actions">
+                            <button class="subject-action-btn lectures-btn" onclick="openLectures('electronics')">
+                                <i class="fas fa-book"></i> المحاضرات
+                            </button>
+                            <a href="summary.html" class="subject-action-btn exam-btn">
+                          <i class="fas fa-graduation-cap"></i> الملخصات
+                          </a>
+                        </div>
+                        <div class="subject-stats">
+                              <span><i class="fas fa-question-circle"></i>120+ سؤال</span>
+                            <span><i class="fas fa-star"></i>متوسط</span>
+                           <span><i class="fas fa-clock"></i>استعد</span>
+                        </div>
+                    </div>
+
+                           <!-- الرياضيات -->
+                    <div class="subject-card" data-subject="math">
+                        <div class="subject-header">
+                            <div class="subject-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <div class="subject-title">
+                                <h3>الرياضيات</h3>
+                                <p>Mathematics</p>
+                            </div>
+                        </div>
+                        <div class="subject-description">
+                            <p>الجبر، التفاضل والتكامل، الهندسة، والإحصاء. أساسيات العلوم التطبيقية.</p>
+                        </div>
+                        <div class="subject-actions">
+                            <button class="subject-action-btn lectures-btn" onclick="openLectures('math')">
+                                <i class="fas fa-book"></i> المحاضرات
+                            </button>
+                            <a href="summary.html" class="subject-action-btn exam-btn">
+                          <i class="fas fa-graduation-cap"></i> الملخصات
+                          </a>
+                        </div>
+                        <div class="subject-stats">
+                              <span><i class="fas fa-question-circle"></i>200+ سؤال</span>
+                            <span><i class="fas fa-star"></i>متقدم</span>
+                           <span><i class="fas fa-clock"></i>استعد</span>
+                        </div>
+                    </div>
+                    
+                    <!-- قوانين الحوسبة -->
+                    <div class="subject-card" data-subject="computing-laws">
+                        <div class="subject-header">
+                            <div class="subject-icon">
+                                <i class="fas fa-gavel"></i>
+                            </div>
+                            <div class="subject-title">
+                                <h3>قوانين الحوسبة</h3>
+                                <p>Computing Laws</p>
+                            </div>
+                        </div>
+                        <div class="subject-description">
+                            <p>القوانين والتشريعات المنظمة لتكنولوجيا المعلومات وحماية البيانات والملكية الفكرية.</p>
+                        </div>
+                        <div class="subject-actions">
+                            <button class="subject-action-btn lectures-btn" onclick="openLectures('computing-laws')">
+                                <i class="fas fa-book"></i> المحاضرات
+                            </button>
+                             <a href="summary.html" class="subject-action-btn exam-btn">
+                          <i class="fas fa-graduation-cap"></i> الملخصات
+                          </a>
+                        </div>
+                        <div class="subject-stats">
+                               <span><i class="fas fa-question-circle"></i>80+ سؤال</span>
+                            <span><i class="fas fa-star"></i>سهل</span>
+                            <span><i class="fas fa-clock"></i>استعد</span>
+                        </div>
+                    </div>
+                    
+                    <!-- تاريخ الحوسبة -->
+                    <div class="subject-card" data-subject="computing-history">
+                        <div class="subject-header">
+                            <div class="subject-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div class="subject-title">
+                                <h3>تاريخ الحوسبة</h3>
+                                <p>Computing History</p>
+                            </div>
+                        </div>
+                        <div class="subject-description">
+                            <p>تطور الحواسيب والبرمجيات، الرواد في مجال الحوسبة، والثورات التكنولوجية.</p>
+                        </div>
+                        <div class="subject-actions">
+                            <button class="subject-action-btn lectures-btn" onclick="openLectures('computing-history')">
+                                <i class="fas fa-book"></i> المحاضرات
+                            </button>
+                            <a href="summary.html" class="subject-action-btn exam-btn">
+                          <i class="fas fa-graduation-cap"></i> الملخصات
+                          </a>
+                        </div>
+                        <div class="subject-stats">
+                               <span><i class="fas fa-question-circle"></i>60+ سؤال</span>
+                            <span><i class="fas fa-star"></i>سهل</span>
+                           <span><i class="fas fa-clock"></i>استعد</span>
+                        </div>
+                    </div>
+                    
+                    <!-- الإنجليزية -->
+                    <div class="subject-card" data-subject="english">
+                        <div class="subject-header">
+                            <div class="subject-icon">
+                                <i class="fas fa-language"></i>
+                            </div>
+                            <div class="subject-title">
+                                <h3>الإنجليزية</h3>
+                                <p>English</p>
+                            </div>
+                        </div>
+                        <div class="subject-description">
+                            <p>قواعد اللغة الإنجليزية، المفردات التقنية، والكتابة الأكاديمية لمجال الحوسبة.</p>
+                        </div>
+                        <div class="subject-actions">
+                            <button class="subject-action-btn lectures-btn" onclick="openLectures('english')">
+                                <i class="fas fa-book"></i> المحاضرات
+                            </button>
+                            <a href="summary.html" class="subject-action-btn exam-btn">
+                          <i class="fas fa-graduation-cap"></i> الملخصات
+                          </a>
+                        </div>
+                        <div class="subject-stats">
+                               <span><i class="fas fa-question-circle"></i>100+ سؤال</span>
+                            <span><i class="fas fa-star"></i>متوسط</span>
+                            <span><i class="fas fa-clock"></i>استعد</span>
+                        </div>
+                    </div>
+                    
+                    <!-- ماث زيرو -->
+                    <div class="subject-card" data-subject="math-zero">
+                        <div class="subject-header">
+                            <div class="subject-icon">
+                                <i class="fas fa-square-root-alt"></i>
+                            </div>
+                            <div class="subject-title">
+                                <h3>ماث زيرو</h3>
+                                <p>Math Zero</p>
+                            </div>
+                        </div>
+                        <div class="subject-description">
+                            <p>أساسيات الرياضيات للمبتدئين، تهيئة الطلاب لدراسة الرياضيات المتقدمة.</p>
+                        </div>
+                        <div class="subject-actions">
+                            <button class="subject-action-btn lectures-btn" onclick="openLectures('math-zero')">
+                                <i class="fas fa-book"></i> المحاضرات
+                            </button>
+                            <a href="summary.html" class="subject-action-btn exam-btn">
+                          <i class="fas fa-graduation-cap"></i> الملخصات
+                          </a>
+                        </div>
+                        <div class="subject-stats">
+                              <span><i class="fas fa-question-circle"></i>90+ سؤال</span>
+                            <span><i class="fas fa-star"></i>سهل</span>
+                           <span><i class="fas fa-clock"></i>استعد</span>
+                        </div>
+                    </div>
+                    
+                    <!-- IT -->
+                    <div class="subject-card" data-subject="it">
+                        <div class="subject-header">
+                            <div class="subject-icon">
+                                <i class="fas fa-laptop-code"></i>
+                            </div>
+                            <div class="subject-title">
+                                <h3>IT</h3>
+                                <p>Information Technology</p>
+                            </div>
+                        </div>
+                        <div class="subject-description">
+                            <p>أساسيات تكنولوجيا المعلومات، الشبكات، قواعد البيانات، وأنظمة التشغيل.</p>
+                        </div>
+                        <div class="subject-actions">
+                            <button class="subject-action-btn lectures-btn" onclick="openLectures('it')">
+                                <i class="fas fa-book"></i> المحاضرات
+                            </button>
+                           <a href="summary.html" class="subject-action-btn exam-btn">
+                          <i class="fas fa-graduation-cap"></i> الملخصات
+                          </a>
+                        </div>
+                        <div class="subject-stats">
+                              <span><i class="fas fa-question-circle"></i>150+ سؤال</span>
+                            <span><i class="fas fa-star"></i>متوسط</span>
+                            <span><i class="fas fa-clock"></i>استعد</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- القسم 2: الامتحانات -->
+            <section id="examsSection" class="platform-section">
+                <div class="exams-header">
+                    <h1><i class="fas fa-graduation-cap"></i> الاختبارات والتحديات</h1>
+                    <p>اختر نوع التحدي وابدأ الاختبار لقياس مستواك وتحسين أدائك</p>
+                </div>
+                
+                <div class="exams-container">
+                    <div class="exam-type-selector">
+                        <button class="exam-type-btn active" onclick="showExamType('challenge')">
+                            <i class="fas fa-bolt"></i> وضع التحدي ⚡
+                        </button>
+                    
+                    </div>
+                    
+                    <!-- قسم وضع التحدي -->
+                    <div id="challengeExam" class="exam-interface active">
+                        <div class="challenge-intro" id="challengeIntro">
+                            <div class="challenge-info">
+                                <div class="challenge-icon">⚡</div>
+                                <h3>تحدي الـ 15 سؤال</h3>
+                                <div class="challenge-subject-line">
+                                    <i class="fas fa-book"></i>
+                                    <span>مادة التحدي:</span>
+                                    <span id="challengeSubjectNameIntro" class="challenge-subject-name">وضع التحدي</span>
+                                </div>
+                                <p>اختبر سرعتك ودقتك! أجب على 15 سؤال عشوائي في <span class="challengeDurationLabel">5</span> دقائق فقط</p>
+                                <div class="challenge-rules">
+                                    <div class="rule">
+                                        <i class="fas fa-clock"></i>
+                                        <span><span class="challengeDurationLabel">5</span> دقائق</span>
+                                    </div>
+                                    <div class="rule">
+                                        <i class="fas fa-question-circle"></i>
+                                        <span>15 سؤال</span>
+                                    </div>
+                                    <div class="rule">
+                                        <i class="fas fa-random"></i>
+                                        <span>أسئلة عشوائية</span>
+                                    </div>
+</div>
+                            </div>
+                            
+                            
+    <div class="challenge-name-input no-username">
+        <button class="btn btn-primary start-challenge-btn" onclick="startChallenge()">
+            <i class="fas fa-rocket"></i>
+            ابدأ التحدي
+        </button>
+    </div>
+</div>
+<!-- واجهة التحدي النشط -->
+                        <div class="challenge-container" id="challengeContainer" style="display: none;">
+                            <div class="challenge-header">
+                                <div class="challenge-timer" id="challengeTimer">
+                                    <i class="fas fa-clock"></i>
+                                    <span id="timerDisplay">05:00</span>
+                                </div>
+                                <div class="challenge-progress">
+                                    <span id="challengeProgress">1/15</span>
+                                </div>
+                                <div class="challenge-score">
+                                    <i class="fas fa-star"></i>
+                                    <span id="challengeScore">0</span>
+                                </div>
+                            </div>
+
+                            <div class="challenge-subject-bar">
+                                <i class="fas fa-book"></i>
+                                <span id="challengeSubjectNameInExam">وضع التحدي</span>
+                            </div>
+                            
+                            <div class="challenge-question-container">
+                                <div class="challenge-question" id="challengeQuestion"></div>
+                                <div class="challenge-options" id="challengeOptions"></div>
+                            </div>
+                            
+                            <div class="challenge-nav">
+                                <button class="btn btn-secondary" id="prevChallengeBtn" onclick="prevChallengeQuestion()" disabled>
+                                    <i class="fas fa-arrow-right"></i>
+                                    السابق
+                                </button>
+                                <button class="btn btn-primary" id="nextChallengeBtn" onclick="nextChallengeQuestion()">
+                                    التالي
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <button class="btn btn-success" id="submitChallengeBtn" onclick="submitChallenge()" style="display: none;">
+                                    <i class="fas fa-check"></i>
+                                    إنهاء التحدي
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- نتيجة التحدي -->
+                        <div class="challenge-result" id="challengeResult" style="display: none;">
+                            <div class="result-icon" id="resultIcon">🏆</div>
+                            <h3 id="resultTitle">أحسنت!</h3>
+                            <div class="result-stats">
+                                <div class="stat">
+                                    <span class="stat-value" id="finalScore">0</span>
+                                    <span class="stat-label">النتيجة</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value" id="finalTime">00:00</span>
+                                    <span class="stat-label">الوقت المستغرق</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value" id="correctAnswers">0/15</span>
+                                    <span class="stat-label">الإجابات الصحيحة</span>
+                                </div>
+                            </div>
+                            <div id="challengeMistakesContainer" style="margin-top:24px; display:none;">
+                                <h4 style="color:#ff6b6b; margin-bottom:10px;">أسئلتك الخاطئة:</h4>
+                                <ul id="challengeMistakesList" style="list-style:decimal; padding-right:20px; color:#333; font-size:1rem;"></ul>
+                            </div>
+                            <div class="result-actions">
+                                <button class="btn btn-primary" onclick="restartChallenge()">
+                                    <i class="fas fa-redo"></i>
+                                    حاول مرة أخرى
+                                </button>
+</div>
+                        </div>
+                    </div>
+                    
+                    <!-- قسم الاختبار السريع -->
+                    <div id="quickExam" class="exam-interface">
+                        <div class="exam-setup">
+                            <h3><i class="fas fa-cog"></i> إعدادات الاختبار السريع</h3>
+                            
+                            <div class="setup-options">
+                                <div class="option-group">
+                                    <label><i class="fas fa-book"></i> اختر المادة:</label>
+                                    <select id="subjectSelect">
+                                        <option value="physics">الفيزياء</option>
+                                        <option value="electronics">الإلكترونيات</option>
+                                        <option value="math">الرياضيات</option>
+                                        <option value="computing-laws">قوانين الحوسبة</option>
+                                        <option value="computing-history">تاريخ الحوسبة</option>
+                                        <option value="english">الإنجليزية</option>
+                                        <option value="math-zero">ماث زيرو</option>
+                                        <option value="it">IT</option>
+                                        <option value="all">جميع المواد</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="option-group">
+                                    <label><i class="fas fa-chart-line"></i> مستوى الصعوبة:</label>
+                                    <div class="difficulty-levels">
+                                        <button class="difficulty-btn active" data-level="easy">سهل</button>
+                                        <button class="difficulty-btn" data-level="medium">متوسط</button>
+                                        <button class="difficulty-btn" data-level="hard">صعب</button>
+                                        <button class="difficulty-btn" data-level="all">الكل</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="start-exam-btn" onclick="startQuickExam()">
+                                <i class="fas fa-play"></i> ابدأ الاختبار السريع
+                            </button>
+                        </div>
+                        
+                        <!-- واجهة الاختبار النشط -->
+                        <div id="activeExam" class="active-exam" style="display: none;">
+                            <div class="exam-header">
+                                <div class="exam-info">
+                                    <h3 id="examTitle">اختبار الفيزياء السريع</h3>
+                                    <p id="examProgress">السؤال 1 من 20</p>
+                                </div>
+                                <div class="exam-timer">
+                                    <i class="fas fa-clock"></i>
+                                    <span id="examTimer">5:00</span>
+                                </div>
+                                <div class="exam-score">
+                                    <i class="fas fa-star"></i>
+                                    <span id="currentScore">0 نقطة</span>
+                                </div>
+                            </div>
+                            
+                            <div class="exam-question-container">
+                                <div class="question-text" id="questionText">
+                                    جاري تحميل السؤال...
+                                </div>
+                                
+                                <div class="question-options" id="questionOptions">
+                                    <!-- الخيارات تظهر هنا -->
+                                </div>
+                            </div>
+                            
+                            <div class="exam-controls">
+                                <button class="control-btn" id="prevQuestion" onclick="prevQuestion()" disabled>
+                                    <i class="fas fa-arrow-right"></i> السابق
+                                </button>
+                                <button class="control-btn" id="nextQuestion" onclick="nextQuestion()">
+                                    التالي <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <button class="control-btn finish-btn" id="finishExam" onclick="finishExam()" style="display: none;">
+                                    <i class="fas fa-check-circle"></i> إنهاء الاختبار
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <!-- نتائج الامتحانات السابقة -->
+                <div class="previous-results">
+                    <h3><i class="fas fa-history"></i> نتائجك السابقة</h3>
+                    <div id="resultsList" class="results-list">
+                        <!-- النتائج تظهر هنا -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- القسم 4: الإعدادات -->
+            <section id="settingsSection" class="platform-section">
+                <div class="settings-header">
+                    <h1><i class="fas fa-cog"></i> الإعدادات</h1>
+                    <p>من هنا تقدر تعدّل أسئلة وضع التحدي وتتحكم في إعدادات المنصة.</p>
+                </div>
+
+                <div id="settingsLockedScreen" class="settings-locked-screen">
+    <div class="locked-screen-card">
+        <div class="lock-icon"><i class="fas fa-lock"></i></div>
+        <h3>الإعدادات مقفولة</h3>
+        <p>ادخل باسورد الأدمن لعرض الإعدادات.</p>
+        <button class="settings-action secondary" onclick="openAdminAccessModal(true)">
+            <i class="fas fa-key"></i> فتح الإعدادات
+        </button>
+    </div>
+</div>
+
+<div id="settingsContent" class="settings-container">
+
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <h3><i class="fas fa-bolt"></i> أسئلة وضع التحدي</h3>
+                            <div class="questions-count" id="challengeQuestionsCount">عدد الأسئلة: --</div>
+                        </div>
+
+                        <p class="settings-note">
+                            لازم يكون عندك <b>15 سؤال أو أكثر</b> عشان وضع التحدي يشتغل. كل سؤال لازم يكون له <b>4 اختيارات</b> وتحدد الإجابة الصحيحة.
+                        </p>
+
+                        <!-- قفل الأدمن لتعديل أسئلة التحدي -->
+                        <div id="adminGateBar" class="admin-gate locked">
+                            <div class="admin-gate-status" id="adminGateStatus">
+                                <i class="fas fa-lock"></i>
+                                تعديل الأسئلة مقفول - دخول الأدمن مطلوب
+                            </div>
+                            <div class="admin-gate-buttons">
+                                <button class="settings-action secondary" onclick="openAdminAccessModal(true)">
+                                    <i class="fas fa-key"></i> فتح الإعدادات
+                                </button>
+                                <button class="settings-action secondary" id="adminGateLockBtn" onclick="lockAdminAccess()" style="display:none">
+                                    <i class="fas fa-lock"></i> قفل
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="settings-actions">
+                            <button class="settings-action" data-admin-edit="challenge" onclick="addChallengeQuestionRow()">
+                                <i class="fas fa-plus"></i> إضافة سؤال
+                            </button>
+                            <button class="settings-action secondary" data-admin-edit="challenge" onclick="resetChallengeQuestions()">
+                                <i class="fas fa-undo"></i> رجوع للافتراضي
+                            </button>
+                            <button class="settings-action secondary" data-admin-edit="challenge" onclick="exportChallengeQuestions()">
+                                <i class="fas fa-file-export"></i> تصدير JSON
+                            </button>
+                            <button class="settings-action secondary" data-admin-edit="challenge" onclick="importChallengeQuestionsFileClick()">
+                                <i class="fas fa-file-import"></i> استيراد JSON
+                            </button>
+                            <input type="file" id="importQuestionsFile" accept="application/json" style="display:none" onchange="handleImportQuestionsFile(event)">
+                        </div>
+
+                        <div id="challengeQuestionsEditor" class="questions-editor">
+                            <!-- يتم إنشاء المحرر ديناميكياً -->
+                        </div>
+
+                        <div class="settings-save">
+                            <button class="settings-save-btn" data-admin-edit="challenge" onclick="saveChallengeQuestionsFromEditor()">
+                                <i class="fas fa-save"></i> حفظ الأسئلة
+                            </button>
+                        </div>
+                    </div>
+                <div class="settings-card">
+                    <h3><i class="fas fa-clock"></i> مدة الامتحان (العد التنازلي)</h3>
+                    <p class="settings-note">يمكنك تغيير مدة الامتحان. التعديل متاح للأدمن فقط.</p>
+
+                    <div class="timer-settings-grid">
+                        <div class="input-group">
+                            <label for="challengeDurationMinutes"><i class="fas fa-bolt"></i> مدة وضع التحدي (بالدقائق)</label>
+                            <input type="number" id="challengeDurationMinutes" min="1" max="60" value="5" data-admin-edit="challenge">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="quickExamDurationMinutes"><i class="fas fa-rocket"></i> مدة الاختبار السريع (بالدقائق)</label>
+                            <input type="number" id="quickExamDurationMinutes" min="1" max="60" value="10" data-admin-edit="challenge">
+                        </div>
+                    
+                        <div class="input-group">
+                            <label for="challengeSubjectNameInput"><i class="fas fa-book"></i> اسم مادة التحدي</label>
+                            <input type="text" id="challengeSubjectNameInput" maxlength="60" placeholder="مثال: فيزياء - الباب الأول" data-admin-edit="challenge">
+                        </div>
+</div>
+
+                    <div class="settings-save">
+                        <button class="settings-save-btn" data-admin-edit="challenge" onclick="saveExamDurations()">
+                            <i class="fas fa-save"></i> حفظ الإعدادات
+                        </button>
+                    </div>
+                </div>
+                
+
+<div class="settings-card" style="margin-top: 25px;">
+    <div class="settings-card-header">
+        <h3><i class="fas fa-list"></i> سجل الامتحانات (للأدمن)</h3>
+    </div>
+
+    <p class="settings-note">
+        هنا هتشوف كل اللي دخلوا الامتحان من أي مكان في العالم (الاسم - الدرجة - مدة الامتحان - نسبة النجاح - نجح/لا).
+        <br>
+        <b>ملاحظة:</b> القائمة مش بتظهر تلقائي… لازم تضغط زرار "عرض القائمة" جوه صفحة الإعدادات.
+    </p>
+
+    <div class="settings-actions">
+        <button class="settings-action secondary" id="adminLoadAttemptsBtn" onclick="toggleAdminAttempts()">
+            <i class="fas fa-eye"></i> عرض القائمة
+        </button>
+
+        <button class="settings-action secondary" id="adminRefreshAttemptsBtn" onclick="loadAdminAttempts(true)" style="display:none">
+            <i class="fas fa-rotate"></i> تحديث
+        </button>
+    </div>
+
+    <div id="adminAttemptsContainer" class="admin-attempts-container" style="display:none;">
+        <div id="adminAttemptsStatus" class="settings-note" style="margin-top: 10px;"></div>
+
+        <!-- ملخص سريع (يتحدث تلقائياً عند تحديث البيانات) -->
+        <div id="adminAttemptsInsights" class="admin-attempts-insights" style="display:none;">
+            <div class="admin-insights-header">
+                <h4><i class="fas fa-chart-simple"></i> ملخص سريع</h4>
+                <div class="admin-insights-meta" id="adminAttemptsInsightsMeta">—</div>
+            </div>
+
+            <div class="admin-insights-grid">
+                <div class="admin-insight-card">
+                    <div class="admin-insight-title"><i class="fas fa-trophy"></i> أعلى 3 درجات</div>
+                    <ol class="admin-insight-list" id="adminTop3List"></ol>
+                </div>
+
+                <div class="admin-insight-card">
+                    <div class="admin-insight-title"><i class="fas fa-flag-checkered"></i> أوائل الممتحنين</div>
+                    <ol class="admin-insight-list" id="adminFirstPeopleList"></ol>
+                </div>
+
+                <div class="admin-insight-card highlight">
+                    <div class="admin-insight-title"><i class="fas fa-user-clock"></i> أول واحد امتحن</div>
+                    <div class="admin-insight-highlight" id="adminFirstAttemptHighlight">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-attempts-table-wrap">
+            <table class="leaderboard-table admin-attempts-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الاسم</th>
+                        <th>نوع الامتحان</th>
+                        <th>المادة</th>
+                        <th>الدرجة</th>
+                        <th>النسبة</th>
+                        <th>المدة</th>
+                        <th>النتيجة</th>
+                        <th>التاريخ</th>
+                    </tr>
+                </thead>
+                <tbody id="adminAttemptsTableBody">
+                    <!-- rows injected by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<div class="settings-card" style="margin-top: 25px;">
+    <div class="settings-card-header">
+        <h3><i class="fas fa-users-gear"></i> إدارة المستخدمين (للأدمن)</h3>
+    </div>
+
+    <p class="settings-note">
+        هنا هتشوف كل المستخدمين اللي سجّلوا في المنصة (الاسم - الإيميل - طريقة الدخول - الدور).
+        <br>
+        كمان هتعرف هل بدأ امتحان / بيمتحن دلوقتي / أو آخر نشاط له.
+        <br>
+        <b>تنبيه مهم:</b> Firebase لا يسمح بعرض كلمة مرور المستخدم نهائياً (لأسباب أمنية)، فهتلاقيها "غير متاح".
+    </p>
+
+    <div class="settings-actions">
+        <button class="settings-action secondary" id="adminLoadUsersBtn" onclick="toggleAdminUsers()">
+            <i class="fas fa-eye"></i> عرض المستخدمين
+        </button>
+
+        <button class="settings-action secondary" id="adminRefreshUsersBtn" onclick="loadAdminUsers(true)" style="display:none">
+            <i class="fas fa-rotate"></i> تحديث
+        </button>
+    </div>
+
+    <div id="adminUsersContainer" class="admin-attempts-container" style="display:none;">
+        <div id="adminUsersStatus" class="settings-note" style="margin-top: 10px;"></div>
+
+        <div class="admin-attempts-table-wrap">
+            <table class="leaderboard-table admin-users-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الاسم</th>
+                        <th>الإيميل</th>
+                        <th>طريقة الدخول</th>
+                        <th>كلمة المرور</th>
+                        <th>الدور</th>
+                        <th>حالة الامتحان</th>
+                        <th>آخر ظهور</th>
+                        <th>تحكم</th>
+                    </tr>
+                </thead>
+                <tbody id="adminUsersTableBody">
+                    <!-- rows injected by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div>
+            </section>
+        </main>
+        <!-- نافذة إدخال الاسم (إجباري قبل بدء الامتحان) -->
+<div id="nameModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-user"></i> قبل ما تبدأ…</h2>
+            <button class="close-modal" onclick="closeModal('nameModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>اكتب <b>اسمك</b> عشان نقدر نسجل نتيجتك في سجل الأدمن.</p>
+
+            <div class="admin-form">
+                <div class="admin-field">
+                    <label for="firstNameInput">الاسم</label>
+                    <input
+                        type="text"
+                        id="firstNameInput"
+                        placeholder="مثال: أحمد محمد"
+                        autocomplete="off"
+                        onkeydown="if(event.key==='Enter'){ verifyFirstNameAndContinue(); }"
+                    >
+                </div>
+
+                <div class="admin-actions">
+                    <button class="save-btn" onclick="verifyFirstNameAndContinue()">
+                        <i class="fas fa-play"></i> حفظ وبدء الامتحان
+                    </button>
+                    <button class="settings-action secondary" onclick="closeModal('nameModal')">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-note">
+                <i class="fas fa-info-circle"></i>
+                الاسم لازم يكون حروف فقط (عربي/إنجليزي) مع مسافات، بدون أرقام أو رموز.
+            </div>
+        </div>
+    </div>
+</div>
+
+        <!-- نافذة دخول الأدمن لتعديل أسئلة التحدي -->
+<div id="adminAccessModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-user-shield"></i> دخول الأدمن</h2>
+                    <button class="close-modal" onclick="closeModal('adminAccessModal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>لعرض/تعديل الإعدادات لازم تدخل <b>باسورد الأدمن</b>.</p>
+
+                    <div class="admin-form">
+<div class="admin-field">
+                            <label for="adminCodeInput">باسورد الأدمن</label>
+                            <input type="password" id="adminCodeInput" placeholder="••••••••••" autocomplete="off">
+                        </div>
+
+                        <div class="admin-actions">
+                            <button class="save-btn" onclick="verifyAdminAccess()">
+                                <i class="fas fa-unlock"></i> فتح
+                            </button>
+                            <button class="settings-action secondary" onclick="closeModal('adminAccessModal')">
+                                <i class="fas fa-times"></i> إلغاء
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="modal-note">
+                        <i class="fas fa-info-circle"></i> ملاحظة: الحماية دي محلية داخل المتصفح (مناسبة للاستخدام داخل المعمل/الصف).
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        
+        <!-- نافذة نتائج الامتحان -->
+        <div id="examResultsModal" class="modal" style="display: none;">
+            <div class="modal-content results-modal">
+                <div class="modal-header">
+                    <h2><i class="fas fa-chart-line"></i> نتائج الاختبار</h2>
+                    <button class="close-modal" onclick="closeModal('examResultsModal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="results-summary">
+                        <div class="result-icon">
+                            <i class="fas fa-trophy" id="resultTrophy"></i>
+                        </div>
+                        <h3 id="resultTitle">أحسنت!</h3>
+                        <p id="resultMessage">لقد أنهيت الاختبار بنجاح</p>
+                        
+                        <div class="result-stats">
+                            <div class="result-stat">
+                                <div class="stat-value" id="finalScore">0</div>
+                                <div class="stat-label">النقاط</div>
+                            </div>
+                            <div class="result-stat">
+                                <div class="stat-value" id="correctAnswers">0/0</div>
+                                <div class="stat-label">الإجابات الصحيحة</div>
+                            </div>
+                            <div class="result-stat">
+                                <div class="stat-value" id="examTime">00:00</div>
+                                <div class="stat-label">الوقت المستغرق</div>
+                            </div>
+                            <div class="result-stat">
+                                <div class="stat-value" id="accuracyRate">0%</div>
+                                <div class="stat-label">الدقة</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="results-actions">
+                        <button class="action-btn" onclick="reviewExam()">
+                            <i class="fas fa-eye"></i> مراجعة الإجابات
+                        </button>
+                        <button class="action-btn primary-btn" onclick="showSection('exams')">
+                            <i class="fas fa-redo"></i> اختيار اختبار آخر
+                        </button>
+                        <button class="action-btn" onclick="shareResults()">
+                            <i class="fas fa-share"></i> مشاركة النتائج
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- الفوتر -->
+        <footer class="space-footer">
+            <div class="footer-container">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <i class="fas fa-rocket"></i>
+                        <div>
+                            <h3>بطوط التعليمية</h3>
+                            <p>منصة تعليمية لطلاب كلية الحاسبات</p>
+                        </div>
+                    </div>
+                    <p class="footer-description">
+                        منصة تعليمية تفاعلية تجمع بين التحدي والتعلم في بيئة فضائية جذابة
+                    </p>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>روابط سريعة</h4>
+                    <a href="#" onclick="showSection('home')">الرئيسية</a>
+                    <a href="#" onclick="showSection('exams')">الامتحانات</a>
+<a href="#" onclick="showSection('settings')">الإعدادات</a>
+                </div>
+                
+                <div class="footer-contact">
+                    <h4>معلومات التواصل</h4>
+                    <p>تم التطوير بواسطة <strong>MOHAMED ALBTAT</strong></p>
+                    <p>منصة تعليمية غير ربحية</p>
+                    <p>جميع الحقوق محفوظة © 2025</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>🚀 استكشف الفضاء التعليمي معنا وارفع مستواك الدراسي!</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- رسائل التنبيه -->
+    <div id="alertContainer"></div>
+
+    <!-- تحميل JavaScript -->
+        <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        serverTimestamp,
+        query,
+        orderBy,
+        limit,
+        where,
+        getDocs,
+        doc,
+        getDoc,
+        setDoc,
+        updateDoc,
+        onSnapshot
+      } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+      import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithPopup,
+        signInWithRedirect,
+        getRedirectResult,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        sendEmailVerification,
+        onAuthStateChanged,
+        signOut,
+        updateProfile,
+        reload
+      } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+      const firebaseConfig = {
+  "apiKey": "AIzaSyBMKVaiNBPt2K1jliWF3udVItMwBVSCgEk",
+  "authDomain": "batoot-70a2a.firebaseapp.com",
+  "projectId": "batoot-70a2a",
+  "storageBucket": "batoot-70a2a.firebasestorage.app",
+  "messagingSenderId": "766876424170",
+  "appId": "1:766876424170:web:30ddd3f98951063b8c0493",
+  "measurementId": "G-57QYB41V6V"
+};
+
+      // Firebase init
+      const app = initializeApp(firebaseConfig);
+      try { getAnalytics(app); } catch (e) {}
+
+      // Firestore
+      const db = getFirestore(app);
+
+      // Auth
+      const auth = getAuth(app);
+
+      // expose APIs for space-script_firebase_admin_updated.js
+      window.firestoreDb = db;
+      window.firestoreApi = {
+        collection, addDoc, serverTimestamp, query, orderBy, limit, where, getDocs,
+        doc, getDoc, setDoc, updateDoc, onSnapshot
+      };
+
+      window.firebaseAuth = auth;
+      window.authApi = {
+        GoogleAuthProvider,
+        signInWithPopup,
+        signInWithRedirect,
+        getRedirectResult,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        sendEmailVerification,
+        onAuthStateChanged,
+        signOut,
+        updateProfile,
+        reload
+      };
+    </script>
+
+    <script src="space-script_server_lectures_pdfviewer.js" defer></script>
+        <!-- تهيئة عند تحميل الصفحة -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ابدأ نظام تسجيل الدخول (Firebase Auth)
+            if (typeof initAuthSystem === 'function') {
+                initAuthSystem();
+            }
+
+            // تهيئة قيم مدة الامتحان داخل الإعدادات + تحديث عرض المؤقت
+            if (typeof initDurationSettingsUI === 'function') {
+                initDurationSettingsUI();
+            }
+
+            // تهيئة اسم مادة وضع التحدي
+            if (typeof initChallengeSubjectUI === 'function') {
+                initChallengeSubjectUI();
+            }
+
+            // تهيئة النجوم
+            if (typeof initStars === 'function') {
+                initStars();
+            }
+        // تهيئة مشغل الموسيقى (زر start music)
+            if (typeof initMusicPlayer === 'function') {
+                initMusicPlayer();
+            }
+
+        });
+    </script>
+</body>
+</html>
